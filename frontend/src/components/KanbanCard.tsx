@@ -20,6 +20,11 @@ export const KanbanCard = ({ card, onDelete }: KanbanCardProps) => {
     transform: CSS.Transform.toString(transform),
     transition,
     touchAction: "none",
+    userSelect: "none",
+    WebkitUserSelect: "none",
+    WebkitTouchCallout: "none",
+    WebkitTapHighlightColor: "transparent",
+    cursor: isDragging ? "grabbing" : "grab",
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -18,6 +18,7 @@ import { createId, initialData, moveCard, type BoardData } from "@/lib/kanban";
 export const KanbanBoard = () => {
   const [board, setBoard] = useState<BoardData>(() => initialData);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const saveTimer = useRef<number | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -90,6 +91,44 @@ export const KanbanBoard = () => {
   };
 
   const activeCard = activeCardId ? cardsById[activeCardId] : null;
+
+  // Load board from backend on mount if token present
+  useEffect(() => {
+    const token = localStorage.getItem("pm_token");
+    if (!token) return;
+    fetch("/api/kanban", { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to load board");
+        return r.json();
+      })
+      .then((data) => {
+        // expect data to match frontend BoardData shape
+        setBoard((prev) => ({ ...prev, ...data }));
+      })
+      .catch(() => {
+        // keep local initialData on failure
+      });
+  }, []);
+
+  // Save board to backend when it changes (debounced)
+  useEffect(() => {
+    const token = localStorage.getItem("pm_token");
+    if (!token) return;
+    if (saveTimer.current) {
+      window.clearTimeout(saveTimer.current);
+    }
+    saveTimer.current = window.setTimeout(() => {
+      fetch("/api/kanban", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(board),
+      }).catch(() => {});
+      saveTimer.current = null;
+    }, 800);
+    return () => {
+      if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    };
+  }, [board]);
 
   return (
     <div className="relative overflow-hidden">

@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    # For production the built frontend is copied into the image. For development,
+    # you may prefer to mount volumes and run frontend separately.

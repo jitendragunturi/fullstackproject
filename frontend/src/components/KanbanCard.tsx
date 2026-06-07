@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
+import type { CSSProperties } from "react";
 import type { Card } from "@/lib/kanban";
 
 type KanbanCardProps = {
@@ -16,9 +17,9 @@ export const KanbanCard = ({ card, onDelete }: KanbanCardProps) => {
     useSortable({ id: card.id });
   const [expanded, setExpanded] = useState(false);
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  const style: CSSProperties = {
+    transform: CSS.Transform.toString(transform) ?? undefined,
+    transition: transition ?? undefined,
     touchAction: "none",
     userSelect: "none",
     WebkitUserSelect: "none",
